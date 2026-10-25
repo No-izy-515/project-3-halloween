@@ -137,34 +137,151 @@ function renderResults(data) {
       : '아직 집계된 투표가 없어요.';
   });
 }
-function refreshResults() {
-  if (!(window.google && google.script && google.script.run)) {
-    showStatus('이 페이지는 Google Apps Script 웹 앱으로 배포한 뒤 사용할 수 있어요.', 'err');
+
+const SUPABASE_URL = 'https://whntwuuwahiqwdvfwdew.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_elkVqrJlsKgf31LqTM5ixw_8t0zDGNm';
+const VOTES_URL = `${SUPABASE_URL}/rest/v1/votes`;
+
+const supabaseHeaders = {
+  apikey: SUPABASE_KEY,
+  Authorization: `Bearer ${SUPABASE_KEY}`,
+  'Content-Type': 'application/json'
+};
+
+async function loadVotes() {
+  const response = await fetch(
+    `${VOTES_URL}?select=nickname,answers`,
+    { headers: supabaseHeaders }
+  );
+  const body = await response.text();
+
+  if (!response.ok) {
+    throw new Error(`조회 오류 (${response.status}): ${body}`);
+  }
+
+  return body ? JSON.parse(body) : [];
+}
+
+function makeResults(rows) {
+  const results = {};
+
+  PEOPLE.forEach(person => {
+    const counts = {};
+
+    rows.forEach(row => {
+      const choice = row.answers?.[person];
+      if (choice) {
+        counts[choice] = (counts[choice] || 0) + 1;
+      }
+    });
+
+    const topCount = Math.max(0, ...Object.values(counts));
+
+    results[person] = {
+      topCount,
+      leaders: topCount
+        ? Object.keys(counts).filter(name => counts[name] === topCount)
+        : []
+    };
+  });
+
+  return { totalVoters: rows.length, results };
+}
+
+async function refreshResults() {
+  try {
+    const rows = await loadVotes();
+    renderResults(makeResults(rows));
+  } catch (error) {
+    showStatus('결과를 불러오지 못했어요: ' + error.message, 'err');
+  }
+}
+
+async function submitVote() {
+  const nickname = document.getElementById('nickname').value.trim();
+
+  if (!nickname) {
+    showStatus('본방 닉네임을 먼저 입력해 주세요.', 'err');
+    document.getElementById('nickname').focus();
     return;
   }
-  google.script.run.withSuccessHandler(renderResults).withFailureHandler(e => showStatus('결과를 불러오지 못했어요: ' + (e.message || e), 'err')).getResults();
-}
-function submitVote() {
-  const nickname = document.getElementById('nickname').value.trim();
-  if (!nickname) { showStatus('본방 닉네임을 먼저 입력해 주세요.', 'err'); document.getElementById('nickname').focus(); return; }
+
   const choices = {};
-  for (let i=0;i<PEOPLE.length;i++) {
-    const value = document.getElementById('pick'+i).value;
-    if (!value) { showStatus(PEOPLE[i] + '의 정체를 선택해 주세요.', 'err'); document.getElementById('pick'+i).focus(); return; }
+
+  for (let i = 0; i < PEOPLE.length; i++) {
+    const value = document.getElementById('pick' + i).value;
+
+    if (!value) {
+      showStatus(PEOPLE[i] + '의 정체를 선택해 주세요.', 'err');
+      document.getElementById('pick' + i).focus();
+      return;
+    }
+
     choices[PEOPLE[i]] = value;
   }
+
   const btn = document.getElementById('submitBtn');
-  btn.disabled = true; btn.textContent = '투표 저장 중…';
-  google.script.run.withSuccessHandler(res => {
-    renderResults(res.results);
-    showStatus(res.updated ? '투표가 수정되어 반영됐어요! 🔮' : '투표 완료! 추리가 결과에 반영됐어요. 🎃', 'ok');
-    btn.disabled = false; btn.textContent = '🎃 투표 제출하기';
-  }).withFailureHandler(e => {
-    showStatus('투표를 저장하지 못했어요: ' + (e.message || e), 'err');
-    btn.disabled = false; btn.textContent = '🎃 투표 제출하기';
-  }).submitVote({nickname, choices});
+  btn.disabled = true;
+  btn.textContent = '투표 저장 중…';
+
+  try {
+    const checkParams = new URLSearchParams({
+      select: 'nickname',
+      nickname: `eq.${nickname}`
+    });
+
+    const checkResponse = await fetch(
+      `${VOTES_URL}?${checkParams}`,
+      { headers: supabaseHeaders }
+    );
+    const checkBody = await checkResponse.text();
+
+    if (!checkResponse.ok) {
+      throw new Error(`기존 투표 확인 오류 (${checkResponse.status}): ${checkBody}`);
+    }
+
+    const existed = JSON.parse(checkBody).length > 0;
+
+    const saveResponse = await fetch(
+      `${VOTES_URL}?on_conflict=nickname`,
+      {
+        method: 'POST',
+        headers: {
+          ...supabaseHeaders,
+          Prefer: 'resolution=merge-duplicates,return=minimal'
+        },
+        body: JSON.stringify({
+          nickname,
+          answers: choices,
+          updated_at: new Date().toISOString()
+        })
+      }
+    );
+    const saveBody = await saveResponse.text();
+
+    if (!saveResponse.ok) {
+      throw new Error(`투표 저장 오류 (${saveResponse.status}): ${saveBody}`);
+    }
+
+    const rows = await loadVotes();
+    renderResults(makeResults(rows));
+
+    showStatus(
+      existed
+        ? '투표가 수정되어 반영됐어요! 🔮'
+        : '투표 완료! 추리가 결과에 반영됐어요. 🎃',
+      'ok'
+    );
+  } catch (error) {
+    showStatus('투표를 저장하지 못했어요: ' + error.message, 'err');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '🎃 투표 제출하기';
+  }
 }
+
 refreshResults();
+
 </script>
 </body>
 </html>
