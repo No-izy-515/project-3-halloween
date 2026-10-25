@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+:root{--ink:#21112f;--purple:#35145b;--purple2:#51217a;--orange:#ff8b24;--cream:#fff2d8;--gold:#ffd86b;--muted:#d9c8e8}
+*{box-sizing:border-box}
+body{margin:0;background:#160d24;color:var(--cream);font-family:system-ui,-apple-system,"Malgun Gothic","Apple SD Gothic Neo",sans-serif;background-image:radial-gradient(circle at 8% 10%,#522277 0,transparent 25%),radial-gradient(circle at 92% 18%,#472064 0,transparent 23%),linear-gradient(150deg,#170d25,#24103a 55%,#130b20);min-height:100vh}
+.wrap{max-width:1000px;margin:auto;padding:22px 14px 48px}
+.hero{position:relative;overflow:hidden;text-align:center;padding:28px 18px 24px;border:2px solid var(--orange);border-radius:24px;background:linear-gradient(135deg,#31104d,#4a1b70 55%,#271039);box-shadow:0 12px 34px #0005}
+.hero:before,.hero:after{content:"🎃";position:absolute;font-size:clamp(36px,7vw,66px);opacity:.9;top:16px}.hero:before{left:16px}.hero:after{right:16px}
+.kicker{letter-spacing:.18em;color:#ffc76a;font-size:.8rem;font-weight:800}
+h1{font-size:clamp(2.2rem,7vw,4rem);line-height:1.1;margin:10px 0;color:#fff2d8;text-shadow:3px 4px 0 #9b4a17}
+.subtitle{color:#e5d2f6;margin:8px 0 0}
+.pill{display:inline-block;border:1px solid #ffb44e;border-radius:999px;padding:7px 13px;margin-top:16px;color:#ffd98d;font-size:.9rem}
+.panel{margin-top:18px;border:1px solid #71438d;border-radius:18px;background:#28143beF;box-shadow:0 8px 22px #0003;padding:18px}
+.panel h2{font-size:1.15rem;margin:0 0 14px;color:#ffc36b}
+label{display:block;font-size:.92rem;font-weight:750;margin-bottom:7px}
+input,select{width:100%;min-height:46px;border-radius:10px;border:1px solid #8b6ca4;background:#fff4df;color:#261432;padding:10px 12px;font:inherit}
+input:focus,select:focus{outline:3px solid #ffb13b;outline-offset:2px}
+.help{font-size:.86rem;color:#d7c5e7;line-height:1.5;margin:7px 0 0}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px}
+.person{border:1px solid #6e4985;border-radius:13px;padding:13px;background:linear-gradient(145deg,#32194a,#29143d)}
+.person-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:9px}
+.person-name{font-weight:850;font-size:1rem}
+.mini{font-size:.75rem;color:#d6bce9}
+.result{margin-top:9px;border-radius:9px;background:#1b1028;padding:9px 10px;font-size:.87rem;color:#ffe2a0;min-height:38px}
+.result strong{color:#ffb44d}
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
+button{border:0;border-radius:12px;padding:13px 18px;font:inherit;font-weight:850;cursor:pointer}
+.primary{background:linear-gradient(135deg,#ffb13b,#ff7c21);color:#2b123b;flex:1;min-width:180px;box-shadow:0 5px 0 #a74716}
+.secondary{background:#4a2b61;color:#fff0d6;border:1px solid #8d69a8}
+button:disabled{opacity:.55;cursor:wait}
+.status{display:none;margin-top:12px;border-radius:10px;padding:11px 13px;line-height:1.45}
+.status.show{display:block}.status.ok{background:#173d31;color:#caffdf}.status.err{background:#55212c;color:#ffe0e5}
+.stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.stat{background:#1b1028;border:1px solid #65407d;border-radius:12px;padding:13px}
+.stat b{display:block;font-size:1.5rem;color:#ffc36b}.stat span{font-size:.85rem;color:#dfcbe9}
+.results-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.result-card{padding:12px;border:1px solid #6e4985;border-radius:12px;background:#241237}
+.result-card .topline{display:flex;justify-content:space-between;gap:8px;align-items:center}
+.leader{font-weight:850;color:#ffca71;margin-top:8px}
+.count{font-size:.8rem;color:#d7c5e7}
+.bar{height:6px;background:#4a315a;border-radius:99px;overflow:hidden;margin-top:9px}.bar span{display:block;height:100%;background:linear-gradient(90deg,#ff7b22,#ffd56a);border-radius:99px}
+footer{text-align:center;color:#bca7ce;font-size:.8rem;padding:20px 8px}
+@media(max-width:600px){.wrap{padding:12px 10px 32px}.hero{padding:26px 12px 20px}.hero:before{left:8px;top:8px}.hero:after{right:8px;top:8px}.grid,.results-grid{grid-template-columns:1fr}.panel{padding:14px}.person{padding:12px}.stats{grid-template-columns:repeat(2,minmax(0,1fr))}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="hero">
+    <div class="kicker">PROJECT_3 · HALLOWEEN SPECIAL</div>
+    <h1>👻 누구였을까? 🕸️</h1>
+    <p class="subtitle">본방 닉네임을 남기고, 11명의 정체를 추리해 보세요!</p>
+    <div class="pill">🕯️ 정답은 없고… 상품은 있다! 🎁</div>
+  </header>
+
+  <section class="panel">
+    <h2>🧙 투표자 정보</h2>
+    <label for="nickname">Name · 본방 닉네임</label>
+    <input id="nickname" maxlength="30" autocomplete="nickname" placeholder="예: 주하">
+    <p class="help">닉네임 하나당 투표 1건으로 집계돼요. 같은 닉네임으로 다시 제출하면 이전 투표가 수정됩니다.</p>
+  </section>
+
+  <section class="panel">
+    <h2>🦇 투표지 · 누구라고 생각하나요?</h2>
+    <p class="help" style="margin-top:-6px;margin-bottom:14px">각 인물 옆 목록을 열어 한 명씩 선택해 주세요. 11명 모두 선택해야 제출할 수 있어요.</p>
+    <div class="grid" id="voteGrid"></div>
+    <div class="actions">
+      <button class="primary" id="submitBtn" onclick="submitVote()">🎃 투표 제출하기</button>
+      <button class="secondary" onclick="refreshResults()">↻ 결과 새로고침</button>
+    </div>
+    <div id="status" class="status" role="status" aria-live="polite"></div>
+  </section>
+
+  <section class="panel">
+    <h2>🔮 현재 추리 결과</h2>
+    <div class="stats">
+      <div class="stat"><b id="totalVoters">0</b><span>참여 닉네임</span></div>
+      <div class="stat"><b id="completed">0 / 11</b><span>집계 대상</span></div>
+    </div>
+    <p class="help">득표 공동 1위가 있으면 모두 표시됩니다. 결과는 새로고침하거나 투표를 제출하면 갱신돼요.</p>
+    <div class="results-grid" id="resultsGrid" style="margin-top:13px"></div>
+  </section>
+  <footer>🕸️ Project_3 Halloween · 추리는 신중하게, 투표는 한 번 더 확인! 🕸️</footer>
+</div>
+<script>
+const PEOPLE = ['라이언','서지혜','시로쨩','야호','열혈','우사기','치이카와','쾌걸근육맨','판다','페어리','헬린이'];
+const OPTIONS = ['주하','리나','개지','꾸루루','막콩','민','슙','아재','자몽','정민','하승진'];
+const voteGrid = document.getElementById('voteGrid');
+
+PEOPLE.forEach((person, i) => {
+  const card = document.createElement('div');
+  card.className = 'person';
+  const label = document.createElement('label');
+  label.className = 'person-head';
+  label.htmlFor = 'pick' + i;
+  label.innerHTML = `<span class="person-name">${i+1}. ${person}</span><span class="mini">추리 대상</span>`;
+  const select = document.createElement('select');
+  select.id = 'pick' + i;
+  select.setAttribute('aria-label', person + '의 정체 추측');
+  select.innerHTML = '<option value="">선택하세요 ▾</option>' + OPTIONS.map(n => `<option value="${n}">${n}</option>`).join('');
+  const result = document.createElement('div');
+  result.className = 'result';
+  result.id = 'inlineResult' + i;
+  result.textContent = '아직 집계된 투표가 없어요.';
+  card.append(label, select, result);
+  voteGrid.appendChild(card);
+});
+
+function showStatus(message, type) {
+  const el = document.getElementById('status');
+  el.textContent = message;
+  el.className = 'status show ' + type;
+}
+function escapeText(s) {
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+function renderResults(data) {
+  document.getElementById('totalVoters').textContent = data.totalVoters;
+  document.getElementById('completed').textContent = data.totalVoters ? '11 / 11' : '0 / 11';
+  const container = document.getElementById('resultsGrid');
+  container.innerHTML = '';
+  PEOPLE.forEach((person, i) => {
+    const r = data.results[person];
+    const leaders = r.leaders.length ? r.leaders.map(escapeText).join(' · ') : '아직 투표 없음';
+    const card = document.createElement('div');
+    card.className = 'result-card';
+    card.innerHTML = `<div class="topline"><strong>${i+1}. ${escapeText(person)}</strong><span class="count">${r.topCount}표</span></div>
+      <div class="leader">1위: ${leaders}</div>
+      <div class="bar"><span style="width:${data.totalVoters ? Math.min(100, r.topCount/data.totalVoters*100) : 0}%"></span></div>`;
+    container.appendChild(card);
+    const inline = document.getElementById('inlineResult' + i);
+    inline.innerHTML = r.leaders.length
+      ? `현재 <strong>1위: ${leaders}</strong> · ${r.topCount}표`
+      : '아직 집계된 투표가 없어요.';
+  });
+}
+function refreshResults() {
+  if (!(window.google && google.script && google.script.run)) {
+    showStatus('이 페이지는 Google Apps Script 웹 앱으로 배포한 뒤 사용할 수 있어요.', 'err');
+    return;
+  }
+  google.script.run.withSuccessHandler(renderResults).withFailureHandler(e => showStatus('결과를 불러오지 못했어요: ' + (e.message || e), 'err')).getResults();
+}
+function submitVote() {
+  const nickname = document.getElementById('nickname').value.trim();
+  if (!nickname) { showStatus('본방 닉네임을 먼저 입력해 주세요.', 'err'); document.getElementById('nickname').focus(); return; }
+  const choices = {};
+  for (let i=0;i<PEOPLE.length;i++) {
+    const value = document.getElementById('pick'+i).value;
+    if (!value) { showStatus(PEOPLE[i] + '의 정체를 선택해 주세요.', 'err'); document.getElementById('pick'+i).focus(); return; }
+    choices[PEOPLE[i]] = value;
+  }
+  const btn = document.getElementById('submitBtn');
+  btn.disabled = true; btn.textContent = '투표 저장 중…';
+  google.script.run.withSuccessHandler(res => {
+    renderResults(res.results);
+    showStatus(res.updated ? '투표가 수정되어 반영됐어요! 🔮' : '투표 완료! 추리가 결과에 반영됐어요. 🎃', 'ok');
+    btn.disabled = false; btn.textContent = '🎃 투표 제출하기';
+  }).withFailureHandler(e => {
+    showStatus('투표를 저장하지 못했어요: ' + (e.message || e), 'err');
+    btn.disabled = false; btn.textContent = '🎃 투표 제출하기';
+  }).submitVote({nickname, choices});
+}
+refreshResults();
+</script>
+</body>
+</html>
